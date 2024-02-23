@@ -3,21 +3,21 @@
 template <typename T>
 class Graph {
 private:
-    int vertices;
+    int64_t vertices;
     std::vector<std::vector<T>> adjacencyList; // список смежности
     std::vector<bool> visited; //Для отслеживание перемещений в алгоритмах bfs, dfs
     std::vector<T> path; // Вектор для хранения пути
 
 public:
-    Graph(int vertices) : vertices(vertices), adjacencyList(vertices), visited(vertices, false) {} //в adjacencyList пустые векторы в количестве vertices штук
+    Graph(int64_t vertices) : vertices(vertices), adjacencyList(vertices), visited(vertices, false) {} //в adjacencyList пустые векторы в количестве vertices штук
 
-    void addEdge(int u, int v) {
+    void addEdge(int64_t u, int64_t v) {
         adjacencyList[u].push_back(v);
         adjacencyList[v].push_back(u); // для неориентированного графа
     }
 
     void displayGraph() {
-        for (int i = 0; i < vertices; ++i) {
+        for (int64_t i = 0; i < vertices; ++i) {
             std::cout << "Смежные вершины для вершины " << i << ": ";
             for (const auto &neighbor : adjacencyList[i]) {
                 std::cout << neighbor << " ";
@@ -84,25 +84,69 @@ private:
     }
 };
 
+template <typename T>
+class Grid {
+private:
+    int64_t rows;
+    int64_t cols;
+    std::vector<std::vector<T>> grid;
+
+public:
+    Grid(int64_t rows, int64_t cols) : rows(rows), cols(cols), grid(rows, std::vector<T>(cols)) {}
+
+    void setCell(int64_t row, int64_t col, const T& value) {
+        grid[row][col] = value;
+    }
+
+    T getCell(int64_t row, int64_t col) const {
+        return grid[row][col];
+    }
+
+    void displayGrid() const {
+        for (int64_t i = 0; i < rows; ++i) {
+            for (int64_t j = 0; j < cols; ++j) {
+                std::cout << grid[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+
+    std::vector<std::pair<int64_t, int64_t>> bfs(int64_t startRow, int64_t startCol) const {
+        std::vector<std::pair<int64_t, int64_t>> result;
+        std::vector<std::vector<bool>> visited(rows, std::vector<bool>(cols, false));
+        std::queue<std::pair<int64_t, int64_t>> queue;
+
+        visited[startRow][startCol] = true;
+        queue.push({startRow, startCol});
+
+        while (!queue.empty()) {
+            std::pair<int64_t, int64_t> current = queue.front();
+            result.push_back(current);
+            queue.pop();
+
+            const int64_t directions[][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};//всевозможные мувы
+
+            for (const auto& direction : directions) {
+                int64_t newRow = current.first + direction[0];
+                int64_t newCol = current.second + direction[1];
+
+                if (isValid(newRow, newCol) && !visited[newRow][newCol]) {
+                    visited[newRow][newCol] = true;
+                    queue.push({newRow, newCol});
+                }
+            }
+        }
+
+        return result;
+    }
+
+private:
+    //метод для проверки допустимости координат
+    bool isValid(int64_t row, int64_t col) const {
+        return row >= 0 && row < rows && col >= 0 && col < cols;
+    }
+};
 
 int main() {
-    Graph<int> myGraph(5);
-
-    myGraph.addEdge(0, 1);
-    myGraph.addEdge(0, 2);
-    myGraph.addEdge(1, 3);
-    myGraph.addEdge(2, 4);
-
-    myGraph.displayGraph();
-
-    std::cout << "DFS: ";
-    myGraph.dfs(0);
-    myGraph.displayPath();
-
-
-    std::cout << "BFS: ";
-    myGraph.bfs(0);
-    myGraph.displayPath();
-
     return 0;
 }
